@@ -1,0 +1,351 @@
+Problem Statement 1: Counting number of files in a given directory
+#!/bin/bash
+read -p "Enter the directory path: " dir
+echo $(find "$dir" -type f | wc -l)
+
+
+Problem Statement 2: Find the second largest number in an array
+#!/bin/bash
+read -p "Enter numbers separated by spaces: " -a arr
+
+largest=${arr[0]}
+second_largest=''
+
+for num in "${arr[@]}"; do
+    if (( num > largest )); then
+        second_largest=$largest
+        largest=$num
+    elif [[ $num -ne $largest ]]; then
+        if [[ -z $second_largest || $num -gt $second_largest ]]; then
+            second_largest=$num
+        fi
+    fi
+done
+
+echo "Second largest number: $second_largest"
+
+
+Problem Statement 3: Concatenate two strings
+#!/bin/bash
+read -p "Enter first string: " str1
+read -p "Enter second string: " str2
+result="${str1}${str2}"
+echo "Concatenated string: $result"
+
+
+Problem Statement 4: Area of a square or rectangle
+#!/bin/bash
+echo "Choose Shape:"
+echo "1. Rectangle"
+echo "2. Square"
+read -p "Enter your choice (1 or 2): " choice
+
+if [[ $choice -eq 1 ]]; then
+    read -p "Enter the length of the rectangle: " length
+    read -p "Enter the width of the rectangle: " width
+    area=$((length * width))
+    echo "Area of the rectangle: $area"
+elif [[ $choice -eq 2 ]]; then
+    read -p "Enter the side of the square: " side
+    area=$((side * side))
+    echo "Area of the square: $area"
+else
+    echo "Invalid choice!"
+fi
+
+
+Problem Statement 5: Printing a hollow square
+#!/bin/bash
+read -p "Enter the size of the square: " n
+
+for ((i = 1; i <= n; i++)); do
+    for ((j = 1; j <= n; j++)); do
+        if [[ $i -eq 1 || $i -eq $n || $j -eq 1 || $j -eq $n ]]; then
+            echo  "* \c"
+        else
+            echo  "  \c"
+        fi
+    done
+    echo
+done
+
+
+Problem: Convert Decimal to Hexadecimal
+#!/bin/bash
+read -p "Enter a decimal number: " dec
+printf "Hexadecimal: %X\n" "$dec"
+
+
+Problem: Find Factorial of a Number
+#!/bin/bash
+read -p "Enter a number: " num
+fact=1
+
+for ((i=2; i<=num; i++)); do
+  fact=$((fact * i))
+done
+
+echo "Factorial: $fact"
+
+
+Problem: Search if a Number Exists in a List
+#!/bin/bash
+read -p "Enter numbers separated by spaces: " -a arr
+read -p "Enter number to search: " target
+found=0
+
+for i in "${arr[@]}"; do
+  if [[ "$i" -eq "$target" ]]; then
+    found=1
+    break
+  fi
+done
+
+if [[ $found -eq 1 ]]; then
+  echo "$target exists in the list."
+else
+  echo "$target does not exist in the list."
+fi
+
+
+Problem: Generate Fibonacci Series up to N Terms
+#!/bin/bash
+read -p "Enter number of terms: " n
+a=0
+b=1
+
+echo "Fibonacci series:"
+for ((i=0; i<n; i++)); do
+  echo -n "$a "
+  fn=$((a + b))
+  a=$b
+  b=$fn
+done
+echo
+
+
+Problem: Count Lines, Words, and Characters in a File
+#!/bin/bash
+read -p "Enter file path: " file
+
+if [[ -f "$file" ]]; then
+  wc "$file"
+else
+  echo "File does not exist."
+fi
+
+
+Problem: Check if a String is a Palindrome
+#!/bin/bash
+read -p "Enter a string: " str
+rev=$(echo "$str" | rev)
+
+if [[ "$str" == "$rev" ]]; then
+  echo "The string is a palindrome."
+else
+  echo "The string is not a palindrome."
+fi
+
+
+Problem: Reverse a Number
+#!/bin/bash
+read -p "Enter a number: " num
+rev=0
+
+while [[ $num -ne 0 ]]; do
+  rem=$((num % 10))
+  rev=$((rev * 10 + rem))
+  num=$((num / 10))
+done
+
+echo "Reversed number: $rev"
+
+
+Problem: Calculate Power of a Number
+#!/bin/bash
+read -p "Enter base: " base
+read -p "Enter exponent: " exp
+result=$((base ** exp))
+echo "$base raised to the power $exp is: $result"
+
+
+Problem: Swap Two Numbers
+#!/bin/bash
+read -p "Enter first number: " a
+read -p "Enter second number: " b
+
+echo "Before swapping: a=$a, b=$b"
+temp=$a
+a=$b
+b=$temp
+echo "After swapping: a=$a, b=$b"
+
+
+Problem: Check if a Number is Prime
+#!/bin/bash
+read -p "Enter a number: " num
+is_prime=1
+
+if [[ $num -le 1 ]]; then
+  is_prime=0
+fi
+
+for ((i=2; i*i<=num; i++)); do
+  if ((num % i == 0)); then
+    is_prime=0
+    break
+  fi
+done
+
+if [[ $is_prime -eq 1 ]]; then
+  echo "$num is a prime number."
+else
+  echo "$num is not a prime number."
+fi
+
+
+Problem: Find GCD (Greatest Common Divisor) of Two Numbers
+#!/bin/bash
+read -p "Enter first number: " a
+read -p "Enter second number: " b
+
+while [[ $b -ne 0 ]]; do
+  temp=$b
+  b=$((a % b))
+  a=$temp
+done
+echo "GCD is $a"
+
+
+Problem: Find LCM (Least Common Multiple) of Two Numbers
+#!/bin/bash
+read -p "Enter first number: " a
+read -p "Enter second number: " b
+
+orig_a=$a
+orig_b=$b
+
+while [[ $b -ne 0 ]]; do
+  temp=$b
+  b=$((a % b))
+  a=$temp
+done
+
+gcd=$a
+lcm=$(( (orig_a * orig_b) / gcd ))
+
+echo "LCM is $lcm"
+
+
+Problem: Count Occurrence of a Word in a File
+#!/bin/bash
+read -p "Enter the file path: " file
+read -p "Enter the word to count: " word
+
+if [[ -f "$file" ]]; then
+  count=$(grep -o "\b$word\b" "$file" | wc -l)
+  echo "The word '$word' occurred $count times."
+else
+  echo "File not found."
+fi
+
+
+Problem: Display Current Date and Time in a Specific Format
+#!/bin/bash
+read -p "Enter date format (e.g. %Y-%m-%d %H:%M:%S): " format
+date +"$format"
+
+
+Problem: Remove Duplicate Lines from a File
+#!/bin/bash
+read -p "Enter the file path: " file
+
+if [[ -f "$file" ]]; then
+  sort "$file" | uniq
+else
+  echo "File does not exist."
+fi
+
+
+Problem: Sum of Digits in a Number
+#!/bin/bash
+read -p "Enter a number: " num
+sum=0
+
+while [[ $num -gt 0 ]]; do
+  digit=$((num % 10))
+  sum=$((sum + digit))
+  num=$((num / 10))
+done
+
+echo "Sum of digits: $sum"
+
+
+Problem: Remove All Spaces from a String
+#!/bin/bash
+read -p "Enter a string: " str
+echo "String without spaces: ${str// /}"
+
+Problem: Fcatorial in words
+#!/bin/bash
+
+# Simple number to word conversion for factorial values up to 20
+number_to_words() {
+    case $1 in
+        0) echo "Zero" ;;
+        1) echo "One" ;;
+        2) echo "Two" ;;
+        3) echo "Three" ;;
+        4) echo "Four" ;;
+        5) echo "Five" ;;
+        6) echo "Six" ;;
+        7) echo "Seven" ;;
+        8) echo "Eight" ;;
+        9) echo "Nine" ;;
+        10) echo "Ten" ;;
+        11) echo "Eleven" ;;
+        12) echo "Twelve" ;;
+        13) echo "Thirteen" ;;
+        14) echo "Fourteen" ;;
+        15) echo "Fifteen" ;;
+        16) echo "Sixteen" ;;
+        17) echo "Seventeen" ;;
+        18) echo "Eighteen" ;;
+        19) echo "Nineteen" ;;
+        20) echo "Twenty" ;;
+        *) echo "Number too large" ;;
+    esac
+}
+
+# Function to calculate factorial
+factorial() {
+    num=$1
+    result=1
+    for ((i=1; i<=num; i++))
+    do
+        result=$((result * i))
+    done
+    echo $result
+}
+
+# Get user input
+read -p "Enter a number: " num
+
+# Calculate factorial
+fact=$(factorial $num)
+
+echo "Factorial of $num is $fact."
+number_to_words $fact
+
+problem: hexa to decimal
+#!/bin/bash
+# Script to convert hexadecimal number to decimal
+
+if [ $# -eq 1 ]; then
+    hex=$1
+    decimal=$((16#$hex))
+    echo "Hexadecimal: $hex"
+    echo "Decimal: $decimal"
+else
+    echo "Please provide a hexadecimal number as an argument."
+fi

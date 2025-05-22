@@ -1,0 +1,162 @@
+
+Bash Command Questions and Answers
+
+1. Change your password to a password you would like to use for the remainder of the semester.
+Command: passwd
+
+2. Display the system’s date.
+Command: date
+
+3. Count the number of lines in the /etc/passwd file.
+Command: wc -l /etc/passwd
+
+4. Find out who else is on the system.
+Command: who
+
+5. Direct the output of the man pages for the date command to a file named mydate.
+Command: man date > mydate
+
+6. Create a subdirectory called mydir.
+Command: mkdir mydir
+
+7. Move the file mydate into the new subdirectory.
+Command: mv mydate mydir/
+
+8. Go to the subdirectory mydir and copy the file mydate to a new file called ourdate.
+Command: cd mydir && cp mydate ourdate
+
+9. List the contents of mydir.
+Command: ls mydir
+
+10. Do a long listing on the file ourdate and note the permissions.
+Command: ls -l mydir/ourdate
+
+11. Display the name of the current directory starting from the root.
+Command: pwd
+
+12. Move the files in the directory mydir back to your home directory.
+Command: mv mydir/* ~
+
+13. Display the first 5 lines of mydate.
+Command: head -n 5 mydir/mydate
+
+14. Display the last 8 lines of mydate.
+Command: tail -n 8 mydir/mydate
+
+15. Remove the directory mydir.
+Command: rm -r mydir
+
+16. Redirect the output of the long listing of files to a file named list.
+Command: ls -l > list
+
+17. Create and concatenate files containing capital names.
+Commands:
+cat > capitals1
+cat > capitals2
+cat > capitals3
+cat capitals1 capitals2 capitals3 > capitals
+
+18. Concatenate the file capitals2 at the end of file capitals.
+Command: cat capitals2 >> capitals
+
+19. Give read and write permissions to all users for the file capitals.
+Command: chmod a+rw capitals
+
+20. Give read permissions only to the owner of the file capitals. Open the file, make some changes and try to save it. What happens?
+Command: chmod 400 capitals
+Note: You won't be able to save changes due to lack of write permission.
+
+21. Create an alias and execute it.
+Commands:
+alias capcat='cat capitals1 capitals2 capitals3 > capitals'
+capcat
+
+22. Find out the number of times the string “the” appears in the file mydate.
+Command: grep -o '\bthe\b' mydate | wc -l
+
+23. Find out the line numbers on which the string “date” exists in mydate.
+Command: grep -n 'date' mydate
+
+24. Print all lines of mydate except those that have the letter “i” in them.
+Command: grep -v 'i' mydate
+
+25. List the words of 4 letters from the file mydate.
+Command: grep -oE '\b[a-zA-Z]{4}\b' mydate
+
+26. Use the paste command to join state-capital files.
+Commands:
+cat > mystates
+cat > mycapitals
+paste mystates mycapitals
+
+27. Print 1st and 3rd columns of the /etc/passwd file.
+Command: cut -d: -f1,3 /etc/passwd
+
+28. Count logged in users and save them using tee.
+Command: who | tee users.txt | wc -l
+
+29. Convert the contents of mystates into uppercase.
+Command: tr 'a-z' 'A-Z' < mystates
+
+30. Display common values between two files.
+Command: comm -12 <(sort file1) <(sort file2)
+
+31. Display disk usage of all files and directories in the current directory.
+Command: du -sh *
+
+32. Find all .txt files in the current directory and subdirectories.
+Command: find . -type f -name '*.txt'
+
+33. Search recursively for the string 'error' in all files.
+Command: grep -r 'error' .
+
+34. Sort a file and remove duplicate lines.
+Command: sort data.txt | uniq
+
+35. Display top 10 memory-consuming processes.
+Command: ps aux --sort=-%mem | head -n 11
+
+36. Change owner of report.txt to user 'john'.
+Command: sudo chown john report.txt
+
+37. Change group of report.txt to 'admin'.
+Command: sudo chgrp admin report.txt
+
+38. Schedule a script to run at 2:30 AM tomorrow.
+Command: echo 'bash ~/backup.sh' | at 2:30 AM tomorrow
+
+39. Display current session's environment variables.
+Command: printenv
+
+40. Display only directories in the current path.
+Command: ls -d */
+
+41. Create a symbolic link link.txt to original.txt.
+Command: ln -s original.txt link.txt
+
+42. Count all files recursively from current directory.
+Command: find . -type f | wc -l
+
+43. Replace 'apple' with 'orange' in fruits.txt.
+Command: sed -i 's/apple/orange/g' fruits.txt
+
+44. Monitor changes in log.txt in real time.
+Command: tail -f log.txt
+
+45. Count how many users are in /etc/passwd.
+Command: cut -d: -f1 /etc/passwd | wc -l
+
+46. Display the first column of data.csv.
+Command: cut -d',' -f1 data.csv
+
+47. Create a tar.gz archive of the directory project.
+Command: tar -czvf project.tar.gz project/
+
+48. Extract contents of backup.tar.gz.
+Command: tar -xzvf backup.tar.gz
+
+49. Display all hidden files in current directory.
+Command: ls -d .??*
+
+50. Kill a process by name (e.g., firefox).
+Command: pkill firefox
