@@ -1,0 +1,142 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MEMORY_SIZE 50
+
+char memory[MEMORY_SIZE][4];
+char IR[4];
+char R[4];
+int IC = 0;
+int C = 0;
+int SI = 0;
+int PI = 0; // 0 = No Error, 1 = Opcode Error, 2 = Operand Error
+
+void copy(char* dest, const char* src) {
+    for (int i = 0; i < 4; i++) dest[i] = src[i];
+}
+
+void displayError() {
+    if (PI == 1) {
+        printf("\nOpcode Error at IC = %d (Instruction: %.4s)\n", IC - 1, IR);
+    } else if (PI == 2) {
+        printf("\nOperand Error at IC = %d (Instruction: %.4s)\n", IC - 1, IR);
+    }
+    printf("--- Program Terminated ---\n");
+    exit(1);
+}
+
+int getOperandAddress(char ch1, char ch2) {
+    if (!isdigit(ch1) || !isdigit(ch2)) {
+        PI = 2; return -1;
+    }
+    return (ch1 - '0') * 10 + (ch2 - '0');
+}
+
+void read() {
+    int loc = getOperandAddress(IR[2], IR[3]);
+    if (PI == 2 || loc >= MEMORY_SIZE) displayError();
+
+    printf("Enter a word (4 characters): ");
+    char buffer[5];
+    scanf("%4s", buffer);
+
+    // Validate characters in buffer
+    for (int i = 0; i < 4; i++) {
+        if (!isalnum(buffer[i]) && !isspace(buffer[i])) {
+            PI = 1; displayError(); // treat unknown char as opcode error
+        }
+    }
+
+    strncpy(memory[loc], buffer, 4);
+    SI = 0;
+}
+
+void write() {
+    int loc = getOperandAddress(IR[2], IR[3]);
+    if (PI == 2 || loc >= MEMORY_SIZE) displayError();
+    printf("Output: %.4s\n", memory[loc]);
+    SI = 0;
+}
+
+void terminate() {
+    printf("\n--- Program Terminated Successfully ---\n");
+    exit(0);
+}
+
+void mos() {
+    if (SI == 1) read();
+    else if (SI == 2) write();
+    else if (SI == 3) terminate();
+}
+
+void executeUserProgram() {
+    while (1) {
+        copy(IR, memory[IC]);
+        IC++;
+
+        char op1 = IR[0], op2 = IR[1];
+
+        // Validate opcode
+        if (
+            !((op1 == 'G' && op2 == 'D') || (op1 == 'P' && op2 == 'D') ||
+              (op1 == 'H' && op2 == ' ') || (op1 == 'L' && op2 == 'R') ||
+              (op1 == 'S' && op2 == 'R') || (op1 == 'C' && op2 == 'R') ||
+              (op1 == 'B' && op2 == 'T'))
+        ) {
+            PI = 1; displayError();
+        }
+
+        int operand = getOperandAddress(IR[2], IR[3]);
+        if ((op1 != 'H' || op2 != ' ') && (operand >= MEMORY_SIZE || operand == -1)) {
+            PI = 2; displayError();
+        }
+
+        // Execute instruction
+        if (op1 == 'G' && op2 == 'D') {
+            SI = 1; mos();
+        }
+        else if (op1 == 'P' && op2 == 'D') {
+            SI = 2; mos();
+        }
+        else if (op1 == 'H' && op2 == ' ') {
+            SI = 3; mos();
+        }
+        else if (op1 == 'L' && op2 == 'R') {
+            copy(R, memory[operand]);
+        }
+        else if (op1 == 'S' && op2 == 'R') {
+            copy(memory[operand], R);
+        }
+        else if (op1 == 'C' && op2 == 'R') {
+            C = (strncmp(R, memory[operand], 4) == 0);
+        }
+        else if (op1 == 'B' && op2 == 'T') {
+            if (C == 1) IC = operand;
+        }
+    }
+}
+
+void loadProgram() {
+    // Prompt user to load instructions
+    printf("Enter number of instructions (max %d): ", MEMORY_SIZE);
+    int n;
+    scanf("%d", &n);
+    if (n > MEMORY_SIZE) n = MEMORY_SIZE;
+
+    for (int i = 0; i < n; i++) {
+        printf("Instruction %d (4 chars): ", i);
+        scanf("%4s", memory[i]);
+    }
+}
+
+int main() {
+    loadProgram();
+    executeUserProgram();
+    return 0;
+}
+//  1
+//  1234
+//  1
+//  SR5Y
