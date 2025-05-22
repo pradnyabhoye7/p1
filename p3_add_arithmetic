@@ -1,0 +1,173 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MEMORY_SIZE 200
+
+char memory[MEMORY_SIZE][4];   // 200 words, each 4 bytes
+char IR[4];                    // Instruction Register
+char R[4];                     // General Purpose Register
+int IC = 0;                    // Instruction Counter
+int C = 0;                     // Toggle register
+int SI = 0;                    // Service Interrupt
+
+void copy(char* dest, char* src) {
+    for (int i = 0; i < 4; i++) dest[i] = src[i];
+}
+
+void mos();
+void startExecution();
+void executeUserProgram();
+void read();
+void write();
+void terminate();
+
+void loadProgram() {
+    // Sample program:
+    // GD10 - Get Data into memory[10]
+    strcpy(memory[0], "GD10");
+
+    // LR10 - Load memory[10] into R
+    strcpy(memory[1], "LR10");
+
+    // AD11 - Add memory[11] to R
+    strcpy(memory[2], "AD11");
+
+    // SR12 - Store result into memory[12]
+    strcpy(memory[3], "SR12");
+
+    // PD12 - Print result from memory[12]
+    strcpy(memory[4], "PD12");
+
+    // H    - Halt
+    strcpy(memory[5], "H   ");
+
+    // Data
+    strcpy(memory[11], "0003"); // Value to be added
+}
+
+void read() {
+    int loc = (IR[2] - '0') * 10 + (IR[3] - '0');
+    printf("Enter 1 word (4 characters): ");
+    char buffer[5];
+    scanf("%4s", buffer);
+    strncpy(memory[loc], buffer, 4);
+    SI = 0;
+}
+
+void write() {
+    int loc = (IR[2] - '0') * 10 + (IR[3] - '0');
+    printf("Output: %.4s\n", memory[loc]);
+    SI = 0;
+}
+
+void terminate() {
+    printf("\n--- Program Terminated ---\n");
+    exit(0);
+}
+
+void mos() {
+    switch (SI) {
+        case 1: read(); break;
+        case 2: write(); break;
+        case 3: terminate(); break;
+        default: break;
+    }
+}
+
+int wordToInt(char* word) {
+    char buffer[5];
+    strncpy(buffer, word, 4);
+    buffer[4] = '\0';
+    return atoi(buffer);
+}
+
+void intToWord(int val, char* word) {
+    snprintf(word, 5, "%04d", val);
+}
+
+void executeUserProgram() {
+    while (1) {
+        copy(IR, memory[IC]);
+        IC++;
+
+        char op1 = IR[0], op2 = IR[1];
+        int operand = (IR[2] - '0') * 10 + (IR[3] - '0');
+
+        if (op1 == 'G' && op2 == 'D') {
+            SI = 1; mos();
+        }
+        else if (op1 == 'P' && op2 == 'D') {
+            SI = 2; mos();
+        }
+        else if (strncmp(IR, "H", 1) == 0) {
+            SI = 3; mos();
+        }
+        else if (op1 == 'L' && op2 == 'R') {
+            copy(R, memory[operand]);
+        }
+        else if (op1 == 'S' && op2 == 'R') {
+            copy(memory[operand], R);
+        }
+        else if (op1 == 'C' && op2 == 'R') {
+            C = (strncmp(R, memory[operand], 4) == 0) ? 1 : 0;
+        }
+        else if (op1 == 'B' && op2 == 'T') {
+            if (C == 1) IC = operand;
+        }
+        else if (op1 == 'A' && op2 == 'D') { // Arithmetic Add
+            int r_val = wordToInt(R);
+            int m_val = wordToInt(memory[operand]);
+            int sum = r_val + m_val;
+            intToWord(sum, R);
+        }
+        else {
+            printf("Invalid Instruction: %.4s\n", IR);
+            exit(1);
+        }
+    }
+}
+
+void startExecution() {
+    IC = 0;
+    executeUserProgram();
+}
+
+int main() {
+    loadProgram();
+    startExecution();
+    return 0;
+}
+
+
+
+// Step 1: GD10
+// Calls read(), asks for a 4-character word.
+
+// You input: 1234
+
+// Memory[10] is set to "1234"
+
+// Step 2: LR10
+// Loads memory[10] into register R
+
+// So R = "1234"
+
+// Step 3: AD11
+// Adds value in memory[11] to R
+
+// memory[11] = "0003"
+
+// wordToInt("1234") = 1234
+
+// wordToInt("0003") = 3
+
+// Sum = 1234 + 3 = 1237
+
+// Converts back to "1237" and stores in R
+
+// Step 4: SR12
+// Stores R (now "1237") into memory[12]
+
+// Step 5: PD12
+// Outputs content of memory[12], which is "1237"
