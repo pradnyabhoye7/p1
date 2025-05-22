@@ -1,0 +1,124 @@
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <math.h> 
+#define MAX_SEGMENTS 10 
+#define MAX_PAGES 100 
+#define PAGE_TABLE_SIZE 100 
+#define SEGMENT_TABLE_SIZE 100 
+int segment_base[MAX_SEGMENTS]; 
+int segment_limit[MAX_SEGMENTS]; 
+int page_table[PAGE_TABLE_SIZE]; 
+void segmentation() { 
+int num_segments; 
+printf("\n------- SEGMENTATION -------\n"); 
+printf("Enter number of segments: "); 
+scanf("%d", &num_segments); 
+for (int i = 0; i < num_segments; i++) { 
+printf("\nSegment %d ->\n", i); 
+printf("Base: "); 
+scanf("%d", &segment_base[i]); 
+printf("-> Size: "); 
+        scanf("%d", &segment_limit[i]); 
+    } 
+ 
+    printf("\n--- SEGMENT TABLE ---\n"); 
+    printf("Segment Number\tBase Address\tSize \n"); 
+    for (int i = 0; i < num_segments; i++) { 
+        printf("%d\t\t%d\t\t%d\n", i, segment_base[i], segment_limit[i]); 
+    } 
+ 
+    int LA; 
+    printf("\nEnter logical address: "); 
+    scanf("%d", &LA); 
+    int seg_no = LA / 4096; 
+    int offset = LA % 4096; 
+    printf("\n==== SEGMENTATION TRANSLATION ====\n"); 
+    printf("Logical Address: %d\n", LA); 
+    printf("Segment Number: %d\n", seg_no); 
+    printf("Offset: %d\n", offset); 
+ 
+    if (seg_no >= num_segments) { 
+        printf("Error: Segment number out of range.\n"); 
+        return; 
+    } 
+    if (offset >= segment_limit[seg_no]) { 
+        printf("Error: offset exceeds segment limit.\n"); 
+    } else { 
+        int physical_address = segment_base[seg_no] + offset; 
+        printf("Physical Address: %d\n", physical_address); 
+    } 
+} 
+void paging() { 
+    int num_pages, page_size; 
+    printf("\n--- PAGING ---\n"); 
+    printf("Enter number of pages: "); 
+    scanf("%d", &num_pages); 
+ 
+    printf("Enter page size : "); 
+    scanf("%d", &page_size); 
+ 
+    if ((page_size & (page_size - 1)) != 0) { 
+        printf("Error: Page size must be a power of 2.\n"); 
+        return; 
+    } 
+ 
+    printf("Enter page table mapping:\n"); 
+    for (int i = 0; i < num_pages; i++) { 
+        printf("Page %d -> ", i); 
+        scanf("%d", &page_table[i]); 
+    } 
+ 
+    printf("\nPAGE TABLE\n"); 
+    printf("Page Number\tFrame Number\n"); 
+    for (int i = 0; i < num_pages; i++) { 
+        printf("%d\t\t%d\n", i, page_table[i]); 
+    } 
+ 
+    int logical_address; 
+    printf("\nEnter logical address (0 to %d): ", num_pages * page_size - 1); 
+    scanf("%d", &logical_address); 
+ 
+    int page_number = logical_address / page_size; 
+    int offset = logical_address % page_size; 
+ 
+    printf("\n------- PAGING TRANSLATION -------\n"); 
+    printf("Logical Address: %d\n", logical_address); 
+    printf("Page Number: %d\n", page_number); 
+    printf("Offset: %d\n", offset); 
+ 
+    if (page_number >= num_pages) { 
+        printf("Error: Page number out of range.\n"); 
+        return; 
+    } 
+ 
+    int frame_number = page_table[page_number]; 
+    int physical_address = frame_number * page_size + offset; 
+ 
+    printf("Frame Number: %d\n", frame_number); 
+    printf("Physical Address: %d\n", physical_address); 
+} 
+ 
+int main() { 
+    int choice; 
+    while (1) { 
+        printf("\n1. Paging\n"); 
+        printf("2. Segmentation\n"); 
+        printf("0. Exit\n"); 
+        printf("Enter your choice: "); 
+        scanf("%d", &choice); 
+ 
+        switch (choice) { 
+            case 1: 
+                paging(); 
+                break; 
+            case 2: 
+                segmentation(); 
+                break; 
+            case 0: 
+                printf("Exiting...\n"); 
+                return 0; 
+            default: 
+                printf("Invalid choice. Try again.\n"); 
+        } 
+    } 
+} 
