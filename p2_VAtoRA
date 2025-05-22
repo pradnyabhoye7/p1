@@ -1,0 +1,151 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define MEMORY_SIZE 400
+#define PAGE_SIZE 10
+#define FRAME_SIZE 10
+#define WORD_SIZE 4
+
+char M[MEMORY_SIZE][WORD_SIZE];  // Main Memory
+char IR[WORD_SIZE];              // Instruction Register
+char R[WORD_SIZE];               // General Purpose Register
+int IC = 0;                      // Instruction Counter
+bool C = false;                  // Toggle Register
+
+int PTR = 100;                   // Page Table Register (points to start of Page Table)
+int pageTable[3] = {11, 23, 5};  // Page Table: Page 0 → 11, Page 1 → 23, Page 2 → 5
+
+int SI = 0, PI = 0, TI = 0;      // Interrupts
+
+// Copy 4-byte string
+void copy(char *dest, const char *src) {
+    for (int i = 0; i < WORD_SIZE; i++) {
+        dest[i] = src[i];
+    }
+}
+
+// Translate Virtual Address to Real Address using paging
+int addressMap(int VA) {
+    if (VA < 0 || VA >= 30) {
+        PI = 2; // Operand error
+        return -1;
+    }
+
+    int pageNum = VA / PAGE_SIZE;
+    int offset = VA % PAGE_SIZE;
+
+    int frame = pageTable[pageNum];  // Get frame number from page table
+    int RA = (frame * FRAME_SIZE) + offset;
+    
+    return RA;
+}
+
+// Terminate with error message
+void terminate(const char *msg) {
+    printf("\n***** TERMINATION MESSAGE *****\n");
+    printf("%s\n", msg);
+    exit(0);
+}
+
+// Master Mode
+void MOS() {
+    if (PI == 1) terminate("Operation Code Error.");
+    if (PI == 2) terminate("Operand Error.");
+    if (SI == 3) terminate("Program Terminated Normally.");
+}
+
+// Execute User Program
+void executeUserProgram() {
+    while (1) {
+        copy(IR, M[IC]);
+        IC++;
+
+        char opcode[3] = { IR[0], IR[1], '\0' };
+        char operandStr[3] = { IR[2], IR[3], '\0' };
+        int VA = atoi(operandStr);
+        int RA = -1;
+
+        if (strcmp(opcode, "H") != 0) {
+            RA = addressMap(VA);
+            if (RA == -1) {
+                break;
+            }
+        }
+
+        if (strcmp(opcode, "LR") == 0) {
+            copy(R, M[RA]);
+        } else if (strcmp(opcode, "SR") == 0) {
+            copy(M[RA], R);
+        } else if (strcmp(opcode, "CR") == 0) {
+            C = (strncmp(R, M[RA], 4) == 0);
+        } else if (strcmp(opcode, "BT") == 0) {
+            if (C) IC = RA;
+        } else if (strcmp(opcode, "GD") == 0) {
+            printf("Enter 4 characters for GD: ");
+            scanf("%s", M[RA]);
+        } else if (strcmp(opcode, "PD") == 0) {
+            printf("PD Output: %.4s\n", M[RA]);
+        } else if (strcmp(opcode, "H") == 0) {
+            SI = 3;
+            break;
+        } else {
+            PI = 1;
+            break;
+        }
+    }
+
+    MOS();
+}
+
+// Load program into memory (preloaded here)
+void loadProgram() {
+    // Virtual Address: 0 → RA = 110
+    strcpy(M[110], "GD00");  // Get input
+    strcpy(M[111], "PD00");  // Print input
+    strcpy(M[112], "H   ");  // Halt
+}
+
+// Manually initialize Page Table
+void initPageTable() {
+    for (int i = 0; i < 3; i++) {
+        int realLoc = PTR + i;
+        sprintf(M[realLoc], "%02d", pageTable[i]);  // Just for display (not used in simulation)
+    }
+}
+
+// Translate user-supplied VA
+void translateVA() {
+    int VA;
+    printf("\nEnter Virtual Address: ");
+    scanf("%d", &VA);
+
+    if (VA < 0 || VA >= 30) {
+        printf("Invalid VA. Must be in range 0 to 29.\n");
+        return;
+    }
+
+    int pageNum = VA / PAGE_SIZE;
+    int offset = VA % PAGE_SIZE;
+    int frameNo = pageTable[pageNum];
+    int RA = (frameNo * FRAME_SIZE) + offset;
+
+    printf("\n--- Address Translation ---\n");
+    printf("Page Number   : %d\n", pageNum);
+    printf("Offset        : %d\n", offset);
+    printf("Frame Number  : %d\n", frameNo);
+    printf("Real Address  : %d\n", RA);
+    printf("PTR           : %d\n", PTR);
+}
+
+int main() {
+    printf("Starting Virtual Machine with Paging\n");
+
+    initPageTable();     // Load page table
+    loadProgram();       // Load program in real memory
+    translateVA();       // Let user translate an address
+    executeUserProgram();// Run program
+
+    return 0;
+}
